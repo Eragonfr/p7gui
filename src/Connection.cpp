@@ -1,4 +1,5 @@
 #include <exception>
+#include <QtDebug>
 
 #include <libp7/packetio.h>
 
@@ -7,7 +8,9 @@
 Connection::Connection(QObject *parent): QObject (parent),
     _handle(NULL)
 {
-
+    connect(&_initThread, SIGNAL(initialized(p7_handle_t *, int)),this, SLOT(handleInitialized(p7_handle_t *, int)));
+    connect(&_optimizeThread, SIGNAL(optimized(p7_handle_t *, int)),this, SLOT(handleOptimized(p7_handle_t *, int)));
+    connect(&_lsFileAsync, &lsFilesAsync::listed, this, &Connection::handleListed);
 }
 
 Connection::~Connection()
@@ -18,10 +21,34 @@ Connection::~Connection()
 
 void Connection::start()
 {
-    int err = p7_init(&_handle, 1, 1);
+    _initThread.initHandle(_handle);
+}
+
+void Connection::stop()
+{
+    p7_exit(_handle, 1);
+    _handle = NULL;
+    emit connected(false);
+    emit disconnected(true);
+}
+
+FileInfoList Connection::listFiles(Memory mem)
+{
+    _lsFileAsync.listFiles(_handle, memoryString(mem));
+}
+
+void Connection::optimize()
+{
+    _optimizeThread.optimize(_handle);
+}
+
+void Connection::handleInitialized(p7_handle_t *handle, int err)
+{
     if(err) {
-        throw CommunicationException(err);
+        emit errorOccured(err,  QString("Connection error: ") + p7_strerror(err));
+        return;
     }
+    _handle = handle;
     const p7_server_t *info = p7_get_info(_handle);
     _cpuid = info->cpuid;
     _envid = info->hwid;
@@ -36,46 +63,34 @@ void Connection::start()
     emit disconnected(false);
 }
 
-void Connection::stop()
+void Connection::handleOptimized(p7_handle_t *handle, int err)
 {
-    p7_exit(_handle, 1);
-    _handle = NULL;
-    emit connected(false);
-    emit disconnected(true);
+    if(err) {
+        emit errorOccured(err,  QString("Optimization error: ") + p7_strerror(err));
+        return;
+    }
+    emit optimized();
 }
 
-FileInfoList Connection::listFiles(Memory mem)
+void Connection::handleListed(const FileInfoList &lst, int err)
 {
-    _fileinfoListBuffer.clear();    
-    int err = p7_lsfiles(_handle, memoryString(mem).toStdString().c_str(), &Connection::lsfilesCallback);
     if(err) {
-        throw CommunicationException(err);
+        emit errorOccured(err,  QString("List files error: ") + p7_strerror(err));
+        return;
     }
-    return _fileinfoListBuffer;
-}
-
-void Connection::optimize()
-{
-    int err = p7_optimize(_handle, "fls0");
-    if(err) {
-        throw CommunicationException(err);
-    }
+    emit listed(lst);
 }
 
 void Connection::copyFile()
 {
     int err = p7_copyfile(_handle, "hidden", "file.txt", NULL, "VISIBLE.txt", "fls0");
-    if(err) {
-        throw CommunicationException(err);
-    }
+    // TODO
 }
 
 void Connection::deleteFile()
 {
     int err = p7_delfile(_handle, NULL, "responsabilities.txt", "fls0");
-    if(err) {
-        throw CommunicationException(err);
-    }
+    // TODO
 }
 
 bool Connection::isStarted()
@@ -103,13 +118,6 @@ void Connection::receiveFile(QString file, QString dir, Memory mem)
     if(err) {
         throw CommunicationException(err);
     }*/
-}
-
-FileInfoList Connection::_fileinfoListBuffer = FileInfoList();
-
-void Connection::lsfilesCallback(const char *dir, const char *filename, p7uint_t filesize)
-{
-    _fileinfoListBuffer.append(FileInfo(dir, filename, filesize));
 }
 
 void Connection::progress(p7ushort_t t, p7ushort_t total)
@@ -156,16 +164,6 @@ int Connection::rom() const
 QString Connection::username() const
 {
     return _username;
-}
-
-CommunicationException::CommunicationException(int err)
-{
-    _err = err;
-}
-
-const char *CommunicationException::what() const noexcept
-{
-    return p7_strerror(_err);
 }
 
 FileInfo::FileInfo(const QString &dir, const QString &file, unsigned int filesize):

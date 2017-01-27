@@ -31,11 +31,19 @@ SOURCES += src/main.cpp\
         src/MainWindow.cpp \
     src/Connection.cpp \
     src/FileSystemTree.cpp \
-    src/CalculatorFileTree.cpp
+    src/CalculatorFileTree.cpp \
+    src/ConnectionInitThread.cpp \
+    src/ConnectionOptimizeThread.cpp \
+    src/async/lsFilesAsync.cpp \
+    src/async/P7Async.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Connection.h \
     src/FileSystemTree.h \
-    src/CalculatorFileTree.h
+    src/CalculatorFileTree.h \
+    src/ConnectionInitThread.h \
+    src/ConnectionOptimizeThread.h \
+    src/async/lsFilesAsync.h \
+    src/async/P7Async.h
 
 FORMS    += src/MainWindow.ui

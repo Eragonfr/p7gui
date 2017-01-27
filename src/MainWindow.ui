@@ -57,6 +57,8 @@
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
     <addaction name="actionInfo"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptimize"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -120,6 +122,14 @@
    </property>
    <property name="text">
     <string>&amp;Infos</string>
+   </property>
+  </action>
+  <action name="actionOptimize">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Optimize</string>
    </property>
   </action>
  </widget>

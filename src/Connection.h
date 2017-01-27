@@ -1,10 +1,15 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include "ConnectionInitThread.h"
+#include "ConnectionOptimizeThread.h"
+
 #include <libp7.h>
 
 #include <QList>
 #include <QObject>
+
+#include <async/lsFilesAsync.h>
 
 class FileInfo {
 
@@ -26,17 +31,6 @@ private:
 };
 
 typedef QList<FileInfo> FileInfoList;
-
-class CommunicationException : public std::exception
-{
-public:
-    CommunicationException(int err);
-
-    const char * what() const noexcept;
-
-private:
-    int _err;
-};
 
 class Connection: public QObject
 {
@@ -69,14 +63,20 @@ public slots:
     void stop();
     void optimize();
 
+private slots:
+    void handleInitialized(p7_handle_t* handle, int err);
+    void handleOptimized(p7_handle_t* handle, int err);
+    void handleListed(const FileInfoList& lst, int err);
+
 signals:
     void transferProgress(int transferred, int total);
     void connected(bool);
     void disconnected(bool);
+    void optimized();
+    void listed(const FileInfoList& lst);
+    void errorOccured(int err, QString message);
 
 private:
-    static FileInfoList _fileinfoListBuffer;
-    static void lsfilesCallback(const char *dir, const char *filename, p7uint_t filesize);
 
     typedef void (Connection::*FNMETHOD) ( p7ushort_t, p7ushort_t );
     void progress(p7ushort_t t, p7ushort_t total);
@@ -90,6 +90,12 @@ private:
     QString _cpuid;
     QString _envid;
     QString _productid;
+
+    // async
+    ConnectionInitThread _initThread;
+    ConnectionOptimizeThread _optimizeThread;
+    lsFilesAsync _lsFileAsync;
+
 };
 
 Q_DECLARE_METATYPE(Connection::Memory)

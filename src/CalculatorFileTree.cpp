@@ -46,32 +46,27 @@ void CalculatorFileTree::refresh()
 {
     if(!_connection->isStarted())
         return;
-    try {
-        FileInfoList finfo = _connection->listFiles(_mem);
-        std::sort(finfo.begin(), finfo.end());
+    FileInfoList finfo = _connection->listFiles(_mem);
+    std::sort(finfo.begin(), finfo.end());
 
-        _model->clear();
-        QStringList lbls;
-        lbls << "Name" << "Size";
-        _model->setHorizontalHeaderLabels(lbls);
+    _model->clear();
+    QStringList lbls;
+    lbls << "Name" << "Size";
+    _model->setHorizontalHeaderLabels(lbls);
 
-        QFileIconProvider iconProvider;
-        foreach(FileInfo info, finfo) {
-            if(info.isDir()) {
-                QStandardItem* dirItem = new QStandardItem(info.dir());
-                dirItem->setIcon(iconProvider.icon(QFileIconProvider::Folder));
-                _model->appendRow(dirItem);
-            } else {
-                QStandardItem* filenameItem = new QStandardItem(info.filename());
-                filenameItem->setIcon(iconProvider.icon(QFileIconProvider::File));
-                _model->appendRow(filenameItem);
-                QStandardItem* sizeItem = new QStandardItem(sizeHumanize(info.filesize()));
-                _model->setItem(filenameItem->row(), 1, sizeItem);
-            }
+    QFileIconProvider iconProvider;
+    foreach(FileInfo info, finfo) {
+        if(info.isDir()) {
+            QStandardItem* dirItem = new QStandardItem(info.dir());
+            dirItem->setIcon(iconProvider.icon(QFileIconProvider::Folder));
+            _model->appendRow(dirItem);
+        } else {
+            QStandardItem* filenameItem = new QStandardItem(info.filename());
+            filenameItem->setIcon(iconProvider.icon(QFileIconProvider::File));
+            _model->appendRow(filenameItem);
+            QStandardItem* sizeItem = new QStandardItem(sizeHumanize(info.filesize()));
+            _model->setItem(filenameItem->row(), 1, sizeItem);
         }
-    } catch(const CommunicationException& e) {
-        QString errMsg = QString("Error: ") + e.what();
-        QMessageBox::critical(this, "Error", errMsg);
     }
 }
 

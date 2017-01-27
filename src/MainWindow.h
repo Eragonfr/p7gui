@@ -4,6 +4,7 @@
 #include "Connection.h"
 
 #include <QMainWindow>
+#include <QProgressBar>
 #include <QStandardItemModel>
 
 namespace Ui {
@@ -31,6 +32,8 @@ private:
 
     Connection* _connection;
     Ui::MainWindow *ui;
+
+    QProgressBar* _progressBar;
 
     QStringList _logs;
 };

@@ -12,7 +12,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    _connection(new Connection(this))
+    _connection(new Connection(this)),
+    _progressBar(new QProgressBar(parent))
 {
     ui->setupUi(this);
 
@@ -28,7 +29,35 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_connection, SIGNAL(connected(bool)), this->ui->actionConnect, SLOT(setDisabled(bool)));
     connect(_connection, SIGNAL(connected(bool)), this->ui->actionDisconnect, SLOT(setEnabled(bool)));
     connect(_connection, SIGNAL(connected(bool)), this->ui->actionInfo, SLOT(setEnabled(bool)));
+    connect(_connection, SIGNAL(connected(bool)), this->ui->actionOptimize, SLOT(setEnabled(bool)));
 
+    connect(this->ui->actionOptimize, &QAction::triggered, [=]() {
+        statusBar()->showMessage("Optimize...");
+        _progressBar->show();
+        _progressBar->setRange(0, 0);
+        _connection->optimize();
+    });
+
+    connect(_connection, &Connection::optimized, [=]() {
+        statusBar()->clearMessage();
+        _progressBar->hide();
+    });
+
+    connect(_connection, &Connection::connected, [=](bool i) {
+        if(!i)
+            return;
+        statusBar()->clearMessage();
+        _progressBar->hide();
+        this->ui->calculatorFileView->refresh();
+    });
+
+    connect(_connection, &Connection::errorOccured, [=](int err, QString message) {
+        statusBar()->showMessage(message);
+        _progressBar->hide();
+        QMessageBox::critical(this, "Error" + QString::number(err), message);
+    });
+    _progressBar->hide();
+    statusBar()->addPermanentWidget(_progressBar);
 }
 
 MainWindow::~MainWindow()
@@ -60,14 +89,10 @@ void MainWindow::aboutQt()
 
 void MainWindow::startConnection()
 {
-    try {
-        _connection->start();
-        this->ui->calculatorFileView->refresh();
-    } catch(const CommunicationException& e) {
-        QString errMsg = QString("Connection error: ") + e.what();
-        QMessageBox::critical(this, "Could not connect to the calculator", errMsg);
-        log(errMsg);
-    }
+    statusBar()->showMessage("Connect...");
+    _progressBar->show();
+    _progressBar->setRange(0, 0);
+    _connection->start();
 }
 
 void MainWindow::stopConnection()
