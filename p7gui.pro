@@ -35,7 +35,8 @@ SOURCES += src/main.cpp\
     src/ConnectionInitThread.cpp \
     src/ConnectionOptimizeThread.cpp \
     src/async/lsFilesAsync.cpp \
-    src/async/P7Async.cpp
+    src/async/delfileAsync.cpp \
+    src/async/copyfileAsync.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Connection.h \
@@ -44,6 +45,7 @@ HEADERS  += src/MainWindow.h \
     src/ConnectionInitThread.h \
     src/ConnectionOptimizeThread.h \
     src/async/lsFilesAsync.h \
-    src/async/P7Async.h
+    src/async/delfileAsync.h \
+    src/async/copyfileAsync.h
 
 FORMS    += src/MainWindow.ui

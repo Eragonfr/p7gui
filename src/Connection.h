@@ -6,31 +6,9 @@
 
 #include <libp7.h>
 
-#include <QList>
 #include <QObject>
 
 #include <async/lsFilesAsync.h>
-
-class FileInfo {
-
-public:
-    FileInfo(const QString &dir, const QString &file, unsigned int filesize);
-
-    QString dir() const;
-    QString filename() const;
-    unsigned int filesize() const;
-
-    bool isDir() const;
-
-    bool operator<(const FileInfo &other) const;
-
-private:
-    QString _dir;
-    QString _filename;
-    unsigned int _filesize;
-};
-
-typedef QList<FileInfo> FileInfoList;
 
 class Connection: public QObject
 {
@@ -41,7 +19,7 @@ public:
     Connection(QObject *parent = Q_NULLPTR);
     ~Connection();
 
-    FileInfoList listFiles(Memory mem);
+    void listFiles(Memory mem);
 
     void sendFile(QString file, QString dir, Memory mem);
     void receiveFile(QString file, QString dir, Memory mem);
@@ -66,14 +44,14 @@ public slots:
 private slots:
     void handleInitialized(p7_handle_t* handle, int err);
     void handleOptimized(p7_handle_t* handle, int err);
-    void handleListed(const FileInfoList& lst, int err);
+    void handleListed(FileInfoList lst, int err);
 
 signals:
     void transferProgress(int transferred, int total);
     void connected(bool);
     void disconnected(bool);
     void optimized();
-    void listed(const FileInfoList& lst);
+    void listed(FileInfoList lst);
     void errorOccured(int err, QString message);
 
 private:
@@ -95,7 +73,6 @@ private:
     ConnectionInitThread _initThread;
     ConnectionOptimizeThread _optimizeThread;
     lsFilesAsync _lsFileAsync;
-
 };
 
 Q_DECLARE_METATYPE(Connection::Memory)

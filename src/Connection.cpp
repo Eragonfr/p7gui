@@ -32,7 +32,7 @@ void Connection::stop()
     emit disconnected(true);
 }
 
-FileInfoList Connection::listFiles(Memory mem)
+void Connection::listFiles(Memory mem)
 {
     _lsFileAsync.listFiles(_handle, memoryString(mem));
 }
@@ -72,7 +72,7 @@ void Connection::handleOptimized(p7_handle_t *handle, int err)
     emit optimized();
 }
 
-void Connection::handleListed(const FileInfoList &lst, int err)
+void Connection::handleListed(FileInfoList lst, int err)
 {
     if(err) {
         emit errorOccured(err,  QString("List files error: ") + p7_strerror(err));
@@ -165,38 +165,3 @@ QString Connection::username() const
 {
     return _username;
 }
-
-FileInfo::FileInfo(const QString &dir, const QString &file, unsigned int filesize):
-    _dir(dir),
-    _filename(file),
-    _filesize(filesize)
-{
-
-}
-
-QString FileInfo::dir() const
-{
-    return _dir;
-}
-
-QString FileInfo::filename() const
-{
-    return _filename;
-}
-
-unsigned int FileInfo::filesize() const
-{
-    return _filesize;
-}
-
-bool FileInfo::isDir() const
-{
-    return _filename.isEmpty();
-}
-
-bool FileInfo::operator<(const FileInfo &other) const
-{
-    return _dir + "/" + _filename < other._dir + "/" + other._filename;
-}
-
-

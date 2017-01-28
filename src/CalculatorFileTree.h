@@ -25,6 +25,8 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
 
 private:
+    static QString sizeHumanize(float);
+
     Connection* _connection;
     QStandardItemModel* _model;
     Connection::Memory _mem;
