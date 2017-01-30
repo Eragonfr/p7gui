@@ -1,11 +1,11 @@
-#include "delfileAsync.h"
+#include "delFileAsync.h"
 
-delfileAsync::delfileAsync(QObject *parent): QThread (parent)
+delFileAsync::delFileAsync(QObject *parent): QThread (parent)
 {
 
 }
 
-void delfileAsync::deleteFile(p7_handle_t *handle, QString memory, QString dir, QString filename)
+void delFileAsync::deleteFile(p7_handle_t *handle, QString memory, QString dir, QString filename)
 {
 
     QMutexLocker locker(&_mutex);
@@ -16,11 +16,11 @@ void delfileAsync::deleteFile(p7_handle_t *handle, QString memory, QString dir, 
     start(QThread::NormalPriority);
 }
 
-void delfileAsync::run()
+void delFileAsync::run()
 {
     _mutex.lock();
     int err = p7_delfile(_handle, _dir.toStdString().c_str(), _filename.toStdString().c_str(),
                          _mem.toStdString().c_str());
     _mutex.unlock();
-    emit listed(finfol, err);
+    emit deleted(err);
 }

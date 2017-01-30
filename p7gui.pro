@@ -32,20 +32,26 @@ SOURCES += src/main.cpp\
     src/Connection.cpp \
     src/FileSystemTree.cpp \
     src/CalculatorFileTree.cpp \
-    src/ConnectionInitThread.cpp \
-    src/ConnectionOptimizeThread.cpp \
     src/async/lsFilesAsync.cpp \
-    src/async/delfileAsync.cpp \
-    src/async/copyfileAsync.cpp
+    src/async/initAsync.cpp \
+    src/async/optimizeAsync.cpp \
+    src/async/reqFileAsync.cpp \
+    src/async/p7Async.cpp \
+    src/async/sendFileAsync.cpp \
+    src/async/delFileAsync.cpp \
+    src/async/copyFileAsync.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Connection.h \
     src/FileSystemTree.h \
     src/CalculatorFileTree.h \
-    src/ConnectionInitThread.h \
-    src/ConnectionOptimizeThread.h \
     src/async/lsFilesAsync.h \
-    src/async/delfileAsync.h \
-    src/async/copyfileAsync.h
+    src/async/initAsync.h \
+    src/async/optimizeAsync.h \
+    src/async/reqFileAsync.h \
+    src/async/p7Async.h \
+    src/async/sendFileAsync.h \
+    src/async/delFileAsync.h \
+    src/async/copyFileAsync.h
 
 FORMS    += src/MainWindow.ui

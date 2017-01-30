@@ -6,16 +6,16 @@
 #include <libp7.h>
 
 
-class delfileAsync : public QThread
+class delFileAsync : public QThread
 {
     Q_OBJECT
 public:
-    delfileAsync(QObject *parent = NULL);
+    delFileAsync(QObject *parent = NULL);
 
     void deleteFile(p7_handle_t *handle, QString memory, QString dir, QString filename);
 
 signals:
-    void deleted(FileInfoList lst, int err);
+    void deleted(int err);
 
 protected:
     void run();

@@ -1,18 +1,19 @@
-#include "ConnectionInitThread.h"
+#include "initAsync.h"
 
-ConnectionInitThread::ConnectionInitThread(QObject *parent): QThread(parent)
+initAsync::initAsync(QObject *parent): QThread (parent)
 {
 
 }
 
-void ConnectionInitThread::initHandle(p7_handle_t *handle)
+void initAsync::initHandle(p7_handle_t *handle)
 {
+
     QMutexLocker locker(&_mutex);
     _handle = handle;
     start(QThread::NormalPriority);
 }
 
-void ConnectionInitThread::run()
+void initAsync::run()
 {
     _mutex.lock();
     int err = p7_init(&_handle, 1, 1);

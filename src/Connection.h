@@ -1,14 +1,17 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include "ConnectionInitThread.h"
-#include "ConnectionOptimizeThread.h"
-
 #include <libp7.h>
 
 #include <QObject>
 
+#include <async/initAsync.h>
 #include <async/lsFilesAsync.h>
+#include <async/optimizeAsync.h>
+#include <async/sendFileAsync.h>
+#include <async/delFileAsync.h>
+#include <async/reqFileAsync.h>
+#include <async/copyFileAsync.h>
 
 class Connection: public QObject
 {
@@ -28,6 +31,7 @@ public:
     void deleteFile();
 
     bool isStarted();
+    bool isWorking();
 
     QString username() const;
     int rom() const;
@@ -42,9 +46,9 @@ public slots:
     void optimize();
 
 private slots:
-    void handleInitialized(p7_handle_t* handle, int err);
-    void handleOptimized(p7_handle_t* handle, int err);
-    void handleListed(FileInfoList lst, int err);
+    void handleInitialized(p7_handle_t *handle, int err);
+    void handleOptimized(int err);
+    void handleFilesListed(FileInfoList lst, int err);
 
 signals:
     void transferProgress(int transferred, int total);
@@ -69,10 +73,16 @@ private:
     QString _envid;
     QString _productid;
 
+    bool _working;
+
     // async
-    ConnectionInitThread _initThread;
-    ConnectionOptimizeThread _optimizeThread;
-    lsFilesAsync _lsFileAsync;
+    initAsync _initAsync;
+    optimizeAsync _optimizeAsync;
+    lsFilesAsync _lsFilesAsync;
+    sendFileAsync _sendFileAsync;
+    copyFileAsync _copyFileAsync;
+    reqFileAsync _reqFileAsync;
+    delFileAsync _delFileAsync;
 };
 
 Q_DECLARE_METATYPE(Connection::Memory)

@@ -1,5 +1,4 @@
 #include <exception>
-#include <QtDebug>
 
 #include <libp7/packetio.h>
 
@@ -8,9 +7,10 @@
 Connection::Connection(QObject *parent): QObject (parent),
     _handle(NULL)
 {
-    connect(&_initThread, SIGNAL(initialized(p7_handle_t *, int)),this, SLOT(handleInitialized(p7_handle_t *, int)));
-    connect(&_optimizeThread, SIGNAL(optimized(p7_handle_t *, int)),this, SLOT(handleOptimized(p7_handle_t *, int)));
-    connect(&_lsFileAsync, &lsFilesAsync::listed, this, &Connection::handleListed);
+    connect(&_initAsync, SIGNAL(initialized(p7_handle_t *, int)),
+            this, SLOT(handleInitialized(p7_handle_t *, int)));
+    connect(&_optimizeAsync, SIGNAL(optimized(int)), this, SLOT(handleOptimized(int)));
+    connect(&_lsFilesAsync, SIGNAL(listed(FileInfoList, int)), this, SLOT(handleFilesListed(FileInfoList, int)));
 }
 
 Connection::~Connection()
@@ -21,7 +21,7 @@ Connection::~Connection()
 
 void Connection::start()
 {
-    _initThread.initHandle(_handle);
+    _initAsync.initHandle(_handle);
 }
 
 void Connection::stop()
@@ -34,12 +34,14 @@ void Connection::stop()
 
 void Connection::listFiles(Memory mem)
 {
-    _lsFileAsync.listFiles(_handle, memoryString(mem));
+    _lsFilesAsync.listFiles(_handle, memoryString(mem));
+    _working = true;
 }
 
 void Connection::optimize()
 {
-    _optimizeThread.optimize(_handle);
+    _optimizeAsync.optimize(_handle);
+    _working = true;
 }
 
 void Connection::handleInitialized(p7_handle_t *handle, int err)
@@ -63,7 +65,7 @@ void Connection::handleInitialized(p7_handle_t *handle, int err)
     emit disconnected(false);
 }
 
-void Connection::handleOptimized(p7_handle_t *handle, int err)
+void Connection::handleOptimized(int err)
 {
     if(err) {
         emit errorOccured(err,  QString("Optimization error: ") + p7_strerror(err));
@@ -72,7 +74,7 @@ void Connection::handleOptimized(p7_handle_t *handle, int err)
     emit optimized();
 }
 
-void Connection::handleListed(FileInfoList lst, int err)
+void Connection::handleFilesListed(FileInfoList lst, int err)
 {
     if(err) {
         emit errorOccured(err,  QString("List files error: ") + p7_strerror(err));
@@ -83,14 +85,25 @@ void Connection::handleListed(FileInfoList lst, int err)
 
 void Connection::copyFile()
 {
-    int err = p7_copyfile(_handle, "hidden", "file.txt", NULL, "VISIBLE.txt", "fls0");
     // TODO
+    _working = true;
 }
 
 void Connection::deleteFile()
 {
-    int err = p7_delfile(_handle, NULL, "responsabilities.txt", "fls0");
     // TODO
+    _working = true;
+}
+
+
+void Connection::sendFile(QString file, QString dir, Memory mem)
+{
+    _sendFileAsync.sendFile(_handle, dir, file, memoryString(mem));
+}
+
+void Connection::receiveFile(QString file, QString dir, Memory mem)
+{
+    _reqFileAsync.reqFile(_handle, dir, file, memoryString(mem));
 }
 
 bool Connection::isStarted()
@@ -98,26 +111,9 @@ bool Connection::isStarted()
     return _handle;
 }
 
-void Connection::sendFile(QString file, QString dir, Memory mem)
+bool Connection::isWorking()
 {
-    /*
-    FILE *fp = fopen("myaddin.g1a", "r");
-    int err = p7_sendfile(_handle, fp, dir.toStdString().c_str(),
-                          file.toStdString().c_str(), memoryString(mem).toStdString().c_str(), 1, NULL, &Connection::progress);
-    if(err) {
-        throw CommunicationException(err);
-    }*/
-}
-
-void Connection::receiveFile(QString file, QString dir, Memory mem)
-{
-    /*
-    FILE *fp = fopen("myaddin.g1a", "w");
-    int err = p7_reqfile(_handle, fp, dir.toStdString().c_str(), file.toStdString().c_str(),
-                         memoryString(mem).toStdString().c_str(), &Connection::progress));
-    if(err) {
-        throw CommunicationException(err);
-    }*/
+    return _working;
 }
 
 void Connection::progress(p7ushort_t t, p7ushort_t total)
