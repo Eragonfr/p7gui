@@ -6,6 +6,41 @@
 #include <QStandardItemModel>
 #include <QTreeView>
 
+class FileItem;
+class DirItem;
+
+class FileTreeItem: public QStandardItem
+{
+public:
+    FileTreeItem(const QIcon &icon, const QString &text);
+
+    DirItem* toDirItem();
+
+    virtual bool isFile() const;
+    virtual bool isDir() const;
+};
+
+class DirItem: public FileTreeItem
+{
+public:
+    DirItem(const QString &text, const QIcon &icon);
+
+    FileTreeItem* createItem(QStringList dirChain, QString filename);
+    bool isDir() const;
+
+private:
+    QMap<QString, FileTreeItem*> _items;
+};
+
+class FileItem: public FileTreeItem
+{
+public:
+    FileItem(const QString &text, const QIcon &icon);
+
+    bool isFile() const;
+
+};
+
 class CalculatorFileTree : public QTreeView
 {
     Q_OBJECT
@@ -25,6 +60,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
 
 private:
+    void createItem(QString filename, QStringList dirChain);
     static QString sizeHumanize(float);
 
     Connection* _connection;

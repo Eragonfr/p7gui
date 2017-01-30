@@ -4,6 +4,7 @@
 #include <QFileIconProvider>
 #include <QMenu>
 #include <QMessageBox>
+#include <QDebug>
 
 CalculatorFileTree::CalculatorFileTree(QWidget *parent)
 {
@@ -31,19 +32,14 @@ void CalculatorFileTree::setConnection(Connection *connection)
         _model->setHorizontalHeaderLabels(lbls);
 
         QFileIconProvider iconProvider;
+        DirItem* rootItem = new DirItem("root", iconProvider.icon(QFileIconProvider::Folder));
+        _model->appendRow(rootItem);
+
         foreach(FileInfo info, lst) {
-            if(info.isDir()) {
-                QStandardItem* dirItem = new QStandardItem(info.dir());
-                dirItem->setIcon(iconProvider.icon(QFileIconProvider::Folder));
-                _model->appendRow(dirItem);
-            } else {
-                QStandardItem* filenameItem = new QStandardItem(info.filename());
-                filenameItem->setIcon(iconProvider.icon(QFileIconProvider::File));
-                _model->appendRow(filenameItem);
-                QStandardItem* sizeItem = new QStandardItem(sizeHumanize(info.filesize()));
-                _model->setItem(filenameItem->row(), 1, sizeItem);
-            }
+            rootItem->createItem(info.dir().split("/"), info.filename());
         }
+
+        setRootIndex(_model->indexFromItem(rootItem));
     });
 }
 
@@ -96,4 +92,71 @@ void CalculatorFileTree::contextMenuEvent(QContextMenuEvent *event)
     menu.addAction("Refresh",this, &CalculatorFileTree::refresh);
 
     menu.exec(event->globalPos());
+}
+
+FileTreeItem::FileTreeItem(const QIcon &icon, const QString &text): QStandardItem (icon, text)
+{
+
+}
+
+DirItem *FileTreeItem::toDirItem()
+{
+    return dynamic_cast<DirItem*>(this);
+}
+
+bool FileTreeItem::isFile() const
+{
+    return false;
+}
+
+bool FileTreeItem::isDir() const
+{
+    return false;
+}
+
+DirItem::DirItem(const QString &text, const QIcon &icon): FileTreeItem (icon, text)
+{
+
+}
+
+FileTreeItem *DirItem::createItem(QStringList dirChain, QString filename)
+{
+    QFileIconProvider iconProvider;
+
+    if(dirChain.isEmpty() || dirChain.value(0).isEmpty()) {
+        if(filename.isEmpty())
+            return this;
+        if(_items.contains(filename))
+            return _items.value(filename);
+        FileItem* item = new FileItem(filename, iconProvider.icon(QFileIconProvider::File));
+        _items.insert(filename, item);
+        appendRow(item);
+        return item;
+    } else {
+        QString dirName = dirChain.takeFirst();
+        DirItem* item;
+        if(_items.contains(dirName)) {
+            item = _items.value(dirName)->toDirItem();
+        } else {
+            item = new DirItem(dirName, iconProvider.icon(QFileIconProvider::Folder));
+            _items.insert(dirName, item);
+            appendRow(item);
+        }
+        return item->createItem(dirChain, filename);
+    }
+}
+
+bool DirItem::isDir() const
+{
+    return true;
+}
+
+FileItem::FileItem(const QString &text, const QIcon &icon): FileTreeItem (icon, text)
+{
+
+}
+
+bool FileItem::isFile() const
+{
+    return true;
 }
