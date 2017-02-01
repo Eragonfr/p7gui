@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>690</width>
-    <height>368</height>
+    <height>363</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,6 +31,13 @@
        </layout>
       </widget>
       <widget class="FileSystemTree" name="systemFileView"/>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="logPanel">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
      </widget>
     </item>
    </layout>
@@ -64,6 +71,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionShow_logs"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout_P7_Gui"/>
     <addaction name="actionAbout_P7"/>
     <addaction name="actionAbout_Qt"/>
@@ -132,6 +141,14 @@
     <string>&amp;Optimize</string>
    </property>
   </action>
+  <action name="actionShow_logs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Show Logs</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -160,7 +177,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>344</x>
-     <y>255</y>
+     <y>181</y>
     </hint>
    </hints>
   </connection>
@@ -241,6 +258,22 @@
     <hint type="destinationlabel">
      <x>344</x>
      <y>183</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_logs</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>logPanel</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>344</x>
+     <y>274</y>
     </hint>
    </hints>
   </connection>

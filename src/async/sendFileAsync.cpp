@@ -14,17 +14,17 @@ void sendFileAsync::sendFile(p7_handle_t *handle, QString file, QString dir, QSt
     _dir = dir;
     _filename = file;
     _mem = mem;
-    start(QThread::NormalPriority);
 }
 
 void sendFileAsync::run()
 {
     _mutex.lock();
-
+    _instance = this;
     QFileInfo finfo(_filename);
     FILE *fp = fopen(_filename.toStdString().c_str(), "r");
     int err = p7_sendfile(_handle, fp, _dir.toStdString().c_str(),
                           finfo.fileName().toStdString().c_str(), _mem.toStdString().c_str(), 1, NULL, &sendFileAsync::handleProgress);
+    _instance = NULL;
     _mutex.unlock();
     emit sent(err);
 }

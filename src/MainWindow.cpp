@@ -6,6 +6,7 @@
 #include <QFileIconProvider>
 #include <QFileSystemModel>
 #include <QMessageBox>
+#include <QTime>
 
 #include <QDebug>
 
@@ -13,12 +14,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     _connection(new Connection(this)),
-    _progressBar(new QProgressBar(parent))
+    _taskNotifierWidget(new TaskNotifierWidget(parent))
 {
     ui->setupUi(this);
 
     this->ui->calculatorFileView->setConnection(_connection);
+    this->ui->systemFileView->setConnection(_connection);
 
+    this->ui->logPanel->hide();
     this->ui->memoryComboBox->addItem("Storage memory (fls0)", Connection::StorageMemory);
     this->ui->memoryComboBox->addItem("SD Card (crd0)", Connection::SdCardMemory);
 
@@ -31,33 +34,35 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_connection, SIGNAL(connected(bool)), this->ui->actionInfo, SLOT(setEnabled(bool)));
     connect(_connection, SIGNAL(connected(bool)), this->ui->actionOptimize, SLOT(setEnabled(bool)));
 
-    connect(this->ui->actionOptimize, &QAction::triggered, [=]() {
-        statusBar()->showMessage("Optimize...");
-        _progressBar->show();
-        _progressBar->setRange(0, 0);
-        _connection->optimize();
+    connect(_connection, &Connection::started, [=](QString message) {
+        statusBar()->clearMessage();
+        _taskNotifierWidget->setMessage(message);
+        _taskNotifierWidget->setProgress(0, 0);
+        _taskNotifierWidget->show();
+        log(message);
     });
 
-    connect(_connection, &Connection::optimized, [=]() {
-        statusBar()->clearMessage();
-        _progressBar->hide();
-    });
+    connect(_connection, &Connection::finished, _taskNotifierWidget, &QWidget::hide);
+    connect(_connection, &Connection::transferProgress, _taskNotifierWidget, &TaskNotifierWidget::setProgress);
+    connect(_connection, &Connection::sent, this->ui->calculatorFileView, &CalculatorFileTree::refresh);
+
+
+    connect(this->ui->actionOptimize, &QAction::triggered, _connection, &Connection::optimize);
 
     connect(_connection, &Connection::connected, [=](bool i) {
         if(!i)
             return;
-        statusBar()->clearMessage();
-        _progressBar->hide();
         this->ui->calculatorFileView->refresh();
     });
 
     connect(_connection, &Connection::errorOccured, [=](int err, QString message) {
         statusBar()->showMessage(message);
-        _progressBar->hide();
         QMessageBox::critical(this, "Error" + QString::number(err), message);
+        log(message);
+        statusBar()->showMessage(message);
     });
-    _progressBar->hide();
-    statusBar()->addPermanentWidget(_progressBar);
+    _taskNotifierWidget->hide();
+    statusBar()->addPermanentWidget(_taskNotifierWidget);
 }
 
 MainWindow::~MainWindow()
@@ -89,9 +94,6 @@ void MainWindow::aboutQt()
 
 void MainWindow::startConnection()
 {
-    statusBar()->showMessage("Connect...");
-    _progressBar->show();
-    _progressBar->setRange(0, 0);
     _connection->start();
 }
 
@@ -114,6 +116,6 @@ void MainWindow::showConnectionInfos()
 
 void MainWindow::log(QString txt)
 {
-    _logs.append(txt);
-    statusBar()->showMessage(txt);
+    _logs.append("["+QTime::currentTime().toString()+"] "+txt);
+    ui->logPanel->setText(_logs.join('\n'));
 }

@@ -7,24 +7,24 @@ reqFileAsync::reqFileAsync(QObject *parent): QThread(parent)
 
 }
 
-void reqFileAsync::reqFile(p7_handle_t *handle, QString file, QString dir, QString mem)
+void reqFileAsync::reqFile(p7_handle_t *handle, QString mem, QString dir, QString file, QString destination)
 {
     QMutexLocker locker(&_mutex);
     _handle = handle;
     _dir = dir;
     _filename = file;
     _mem = mem;
-    start(QThread::NormalPriority);
+    _destination = destination;
 }
 
 void reqFileAsync::run()
 {
     _mutex.lock();
-
-    QFileInfo finfo(_filename);
-    FILE *fp = fopen(_filename.toStdString().c_str(), "w");
-    int err = p7_reqfile(_handle, fp, _dir.toStdString().c_str(), finfo.fileName().toStdString().c_str(),
+    _instance = this;
+    FILE *fp = fopen((_destination + "/" + _filename).toStdString().c_str(), "w");
+    int err = p7_reqfile(_handle, fp, _dir.toStdString().c_str(), _filename.toStdString().c_str(),
                          _mem.toStdString().c_str(), &reqFileAsync::handleProgress);
+    _instance = NULL;
     _mutex.unlock();
     emit received(err);
 }

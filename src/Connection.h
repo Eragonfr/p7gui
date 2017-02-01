@@ -1,17 +1,12 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include "AsyncPool.h"
+
 #include <libp7.h>
 
 #include <QObject>
-
-#include <async/initAsync.h>
-#include <async/lsFilesAsync.h>
-#include <async/optimizeAsync.h>
-#include <async/sendFileAsync.h>
-#include <async/delFileAsync.h>
-#include <async/reqFileAsync.h>
-#include <async/copyFileAsync.h>
+#include "FileInfo.h"
 
 class Connection: public QObject
 {
@@ -25,10 +20,10 @@ public:
     void listFiles(Memory mem);
 
     void sendFile(QString file, QString dir, Memory mem);
-    void receiveFile(QString file, QString dir, Memory mem);
+    void receiveFile(Memory mem, QString dir, QString file, QString des);
 
-    void copyFile();
-    void deleteFile();
+    void copyFile(Memory memory, QString dir, QString filename, QString newdir, QString newname);
+    void deleteFile(Memory memory, QString dir, QString filename);
 
     bool isStarted();
     bool isWorking();
@@ -40,6 +35,8 @@ public:
     QString envid() const;
     QString productid() const;
 
+    static QString memoryString(Memory mem);
+
 public slots:
     void start();
     void stop();
@@ -49,6 +46,10 @@ private slots:
     void handleInitialized(p7_handle_t *handle, int err);
     void handleOptimized(int err);
     void handleFilesListed(FileInfoList lst, int err);
+    void handleDeleted(int err);
+    void handleSent(int err);
+    void handleReceived(int err);
+    void handleCopied(int err);
 
 signals:
     void transferProgress(int transferred, int total);
@@ -56,14 +57,15 @@ signals:
     void disconnected(bool);
     void optimized();
     void listed(FileInfoList lst);
+    void deleted();
     void errorOccured(int err, QString message);
+    void started(QString);
+    void finished();
+    void received();
+    void sent();
+    void copied();
 
 private:
-
-    typedef void (Connection::*FNMETHOD) ( p7ushort_t, p7ushort_t );
-    void progress(p7ushort_t t, p7ushort_t total);
-    QString memoryString(Memory mem);
-
     p7_handle_t *_handle;
 
     QString _username;
@@ -73,16 +75,7 @@ private:
     QString _envid;
     QString _productid;
 
-    bool _working;
-
-    // async
-    initAsync _initAsync;
-    optimizeAsync _optimizeAsync;
-    lsFilesAsync _lsFilesAsync;
-    sendFileAsync _sendFileAsync;
-    copyFileAsync _copyFileAsync;
-    reqFileAsync _reqFileAsync;
-    delFileAsync _delFileAsync;
+    AsyncPool _pool;
 };
 
 Q_DECLARE_METATYPE(Connection::Memory)

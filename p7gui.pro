@@ -39,7 +39,10 @@ SOURCES += src/main.cpp\
     src/async/p7Async.cpp \
     src/async/sendFileAsync.cpp \
     src/async/delFileAsync.cpp \
-    src/async/copyFileAsync.cpp
+    src/async/copyFileAsync.cpp \
+    src/TaskNotifierWidget.cpp \
+    src/AsyncPool.cpp \
+    src/FileInfo.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Connection.h \
@@ -52,6 +55,13 @@ HEADERS  += src/MainWindow.h \
     src/async/p7Async.h \
     src/async/sendFileAsync.h \
     src/async/delFileAsync.h \
-    src/async/copyFileAsync.h
+    src/async/copyFileAsync.h \
+    src/TaskNotifierWidget.h \
+    src/AsyncPool.h \
+    src/FileInfo.h
 
-FORMS    += src/MainWindow.ui
+FORMS    += src/MainWindow.ui \
+    src/TaskNotifierWidget.ui
+
+target.path = /usr/bin
+INSTALLS += target

@@ -10,7 +10,6 @@ void initAsync::initHandle(p7_handle_t *handle)
 
     QMutexLocker locker(&_mutex);
     _handle = handle;
-    start(QThread::NormalPriority);
 }
 
 void initAsync::run()

@@ -8,24 +8,30 @@
 
 class FileItem;
 class DirItem;
+class CalculatorFileTree;
 
 class FileTreeItem: public QStandardItem
 {
 public:
-    FileTreeItem(const QIcon &icon, const QString &text);
+    FileTreeItem(const QString& text, const FileInfo &finfo, const QIcon &icon);
 
     DirItem* toDirItem();
+    FileItem* toFileItem();
 
     virtual bool isFile() const;
     virtual bool isDir() const;
+    const FileInfo& info() const;
+
+private:
+    FileInfo _finfo;
 };
 
 class DirItem: public FileTreeItem
 {
 public:
-    DirItem(const QString &text, const QIcon &icon);
+    DirItem(const QString& dirname, const FileInfo &finfo, const QIcon &icon);
 
-    FileTreeItem* createItem(QStringList dirChain, QString filename);
+    FileTreeItem* createItem(QStringList dirChain, FileInfo fileinfo);
     bool isDir() const;
 
 private:
@@ -35,10 +41,24 @@ private:
 class FileItem: public FileTreeItem
 {
 public:
-    FileItem(const QString &text, const QIcon &icon);
+    FileItem(const FileInfo &finfo, const QIcon &icon);
 
     bool isFile() const;
+};
 
+class CalculatorFileModel: public QStandardItemModel
+{
+public:
+    CalculatorFileModel(CalculatorFileTree* tree);
+
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const;
+    QStringList mimeTypes() const;
+
+    QMimeData *mimeData(const QModelIndexList &indexes) const;
+
+private:
+    CalculatorFileTree* _tree;
 };
 
 class CalculatorFileTree : public QTreeView
@@ -60,11 +80,10 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
 
 private:
-    void createItem(QString filename, QStringList dirChain);
     static QString sizeHumanize(float);
 
     Connection* _connection;
-    QStandardItemModel* _model;
+    CalculatorFileModel* _model;
     Connection::Memory _mem;
 };
 

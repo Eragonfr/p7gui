@@ -11,7 +11,7 @@ class reqFileAsync : public QThread
 public:
     reqFileAsync(QObject *parent = NULL);
 
-    void reqFile(p7_handle_t *_handle, QString file, QString dir, QString mem);
+    void reqFile(p7_handle_t *_handle, QString mem, QString dir, QString file, QString destination);
 
 signals:
     void received(int err);
@@ -27,6 +27,7 @@ protected:
     QString _mem;
     QString _dir;
     QString _filename;
+    QString _destination;
 };
 
 #endif // REQFILEASYNC_H

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "Connection.h"
+#include "TaskNotifierWidget.h"
 
 #include <QMainWindow>
 #include <QProgressBar>
@@ -33,7 +34,7 @@ private:
     Connection* _connection;
     Ui::MainWindow *ui;
 
-    QProgressBar* _progressBar;
+    TaskNotifierWidget* _taskNotifierWidget;
 
     QStringList _logs;
 };

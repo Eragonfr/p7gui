@@ -14,7 +14,6 @@ void copyFileAsync::copyFile(p7_handle_t *handle, QString memory, QString dir, Q
     _filename = filename;
     _newDir = newDir;
     _newFilename = newFilename;
-    start(QThread::NormalPriority);
 }
 
 void copyFileAsync::run()
