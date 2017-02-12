@@ -7,11 +7,11 @@
 
 #include <FileInfo.h>
 
-class lsFilesAsync : public QThread
+class listAsync : public QThread
 {
     Q_OBJECT
 public:
-    lsFilesAsync(QObject *parent = NULL);
+    listAsync(QObject *parent = NULL);
 
     void listFiles(p7_handle_t *_handle, QString memory);
 
@@ -23,7 +23,8 @@ protected:
 
 private:
     static FileInfoList finfol;
-    static void fileinfoCallback(const char *dir, const char *filename, p7uint_t filesize);
+    static void fileinfoCallback(void *cookie, const char *dir, const char *filename,
+                                 p7uint_t filesize);
 
     QMutex _mutex;
     p7_handle_t* _handle;

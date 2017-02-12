@@ -5,11 +5,11 @@
 #include <QMutex>
 #include <libp7.h>
 
-class copyFileAsync : public QThread
+class copyAsync : public QThread
 {
     Q_OBJECT
 public:
-    copyFileAsync(QObject *parent = NULL);
+    copyAsync(QObject *parent = NULL);
 
     void copyFile(p7_handle_t *handle, QString memory, QString dir, QString filename, QString newDir, QString newFilename);
 

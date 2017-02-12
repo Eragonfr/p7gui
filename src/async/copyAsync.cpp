@@ -1,11 +1,11 @@
-#include "copyFileAsync.h"
+#include "copyAsync.h"
 
-copyFileAsync::copyFileAsync(QObject *parent): QThread (parent)
+copyAsync::copyAsync(QObject *parent): QThread (parent)
 {
 
 }
 
-void copyFileAsync::copyFile(p7_handle_t *handle, QString memory, QString dir, QString filename, QString newDir, QString newFilename)
+void copyAsync::copyFile(p7_handle_t *handle, QString memory, QString dir, QString filename, QString newDir, QString newFilename)
 {
     QMutexLocker locker(&_mutex);
     _handle = handle;
@@ -16,10 +16,10 @@ void copyFileAsync::copyFile(p7_handle_t *handle, QString memory, QString dir, Q
     _newFilename = newFilename;
 }
 
-void copyFileAsync::run()
+void copyAsync::run()
 {
     _mutex.lock();
-    int err = p7_copyfile(_handle, _dir.toStdString().c_str(), _filename.toStdString().c_str(),
+    int err = p7_copy(_handle, _dir.toStdString().c_str(), _filename.toStdString().c_str(),
                           _newDir.toStdString().c_str(), _newFilename.toStdString().c_str(),
                          _mem.toStdString().c_str());
     _mutex.unlock();

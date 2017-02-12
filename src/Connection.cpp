@@ -2,15 +2,17 @@
 
 #include <libp7/packetio.h>
 
+#include <QDebug>
+
 #include "Connection.h"
 
 #include <async/initAsync.h>
-#include <async/lsFilesAsync.h>
+#include <async/listAsync.h>
 #include <async/optimizeAsync.h>
 #include <async/sendFileAsync.h>
-#include <async/delFileAsync.h>
+#include <async/deleteAsync.h>
 #include <async/reqFileAsync.h>
-#include <async/copyFileAsync.h>
+#include <async/copyAsync.h>
 
 Connection::Connection(QObject *parent): QObject (parent),
     _handle(NULL),
@@ -36,7 +38,7 @@ void Connection::start()
 
 void Connection::stop()
 {
-    p7_exit(_handle, 1);
+    p7_exit(_handle);
     _handle = NULL;
     emit connected(false);
     emit disconnected(true);
@@ -44,7 +46,7 @@ void Connection::stop()
 
 void Connection::listFiles(Memory mem)
 {
-    lsFilesAsync* lsFilesThread = new lsFilesAsync(this);
+    listAsync* lsFilesThread = new listAsync(this);
     connect(lsFilesThread, SIGNAL(listed(FileInfoList, int)), SLOT(handleFilesListed(FileInfoList, int)));
 
     lsFilesThread->listFiles(_handle, memoryString(mem));
@@ -150,7 +152,7 @@ void Connection::handleCopied(int err)
 
 void Connection::deleteFile(Memory memory, QString dir, QString filename)
 {
-    delFileAsync* delFileThread = new delFileAsync(this);
+    deleteAsync* delFileThread = new deleteAsync(this);
     connect(delFileThread, SIGNAL(deleted(int)), SLOT(handleDeleted(int)));
 
     delFileThread->deleteFile(_handle, memoryString(memory), dir, filename);
@@ -181,7 +183,7 @@ void Connection::receiveFile(Memory mem, QString dir, QString file, QString des)
 
 void Connection::copyFile(Connection::Memory memory, QString dir, QString filename, QString newdir, QString newname)
 {
-    copyFileAsync* copyFileThread = new copyFileAsync(this);
+    copyAsync* copyFileThread = new copyAsync(this);
     connect(copyFileThread, SIGNAL(copied(int)), SLOT(handleCopied(int)));
 
     copyFileThread->copyFile(_handle,memoryString(memory), dir, filename, newdir, newname);

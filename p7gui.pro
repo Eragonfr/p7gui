@@ -32,33 +32,33 @@ SOURCES += src/main.cpp\
     src/Connection.cpp \
     src/FileSystemTree.cpp \
     src/CalculatorFileTree.cpp \
-    src/async/lsFilesAsync.cpp \
     src/async/initAsync.cpp \
     src/async/optimizeAsync.cpp \
     src/async/reqFileAsync.cpp \
     src/async/p7Async.cpp \
     src/async/sendFileAsync.cpp \
-    src/async/delFileAsync.cpp \
-    src/async/copyFileAsync.cpp \
     src/TaskNotifierWidget.cpp \
     src/AsyncPool.cpp \
-    src/FileInfo.cpp
+    src/FileInfo.cpp \
+    src/async/listAsync.cpp \
+    src/async/deleteAsync.cpp \
+    src/async/copyAsync.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Connection.h \
     src/FileSystemTree.h \
     src/CalculatorFileTree.h \
-    src/async/lsFilesAsync.h \
     src/async/initAsync.h \
     src/async/optimizeAsync.h \
     src/async/reqFileAsync.h \
     src/async/p7Async.h \
     src/async/sendFileAsync.h \
-    src/async/delFileAsync.h \
-    src/async/copyFileAsync.h \
     src/TaskNotifierWidget.h \
     src/AsyncPool.h \
-    src/FileInfo.h
+    src/FileInfo.h \
+    src/async/listAsync.h \
+    src/async/deleteAsync.h \
+    src/async/copyAsync.h
 
 FORMS    += src/MainWindow.ui \
     src/TaskNotifierWidget.ui

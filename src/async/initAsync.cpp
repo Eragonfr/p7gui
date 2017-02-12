@@ -15,7 +15,7 @@ void initAsync::initHandle(p7_handle_t *handle)
 void initAsync::run()
 {
     _mutex.lock();
-    int err = p7_init(&_handle, 1, 1);
+    int err = p7_init(&_handle, P7_ACTIVE | P7_CHECK | P7_TERM);
     _mutex.unlock();
     emit initialized(_handle, err);
 }
